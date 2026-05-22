@@ -1,4 +1,4 @@
-export const skills = [
+export const tasks = [
     {
         id: 1,
         title: 'Dê "Bom dia" a alguém desconhecido',

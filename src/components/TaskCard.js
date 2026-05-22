@@ -2,13 +2,19 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 
 export default function TaskCard(props) {
 
+    window.completedColor = props.completed ? '#00ff88' : '#dfcb1b'; 
+
     return (
         <Pressable style={styles.card} onPress={props.onToggle}>
             <Text style={styles.title}> {props.title} </Text>
 
             <Text style={styles.skill}> Habilidade: {props.skill} </Text>
 
-            <Text style={styles.status}> {props.completed ? 'Concluída' : 'Pendente'} </Text>
+            <Text style={styles.difficulty}>
+
+            </Text>
+
+            <Text style={styles.status, {color: completedColor}}> {props.completed ? 'Concluída' : 'Pendente'} </Text>
         </Pressable>
     );
 };
@@ -31,9 +37,11 @@ const styles = StyleSheet.create({
         color: '#cccccc',
         fontSize: 16,
     },
+    difficulty: {
+
+    },
     status: {
         marginTop: 10,
-        color: '#00ff88',
         fontWeight: 'bold'
     }
 });
