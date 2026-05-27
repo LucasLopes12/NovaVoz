@@ -1,11 +1,21 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, ScrollView } from 'react-native';
 import { useState, useEffect } from 'react';
 import TaskCard from '../components/TaskCard';
 import Footer from '../components/Footer';
 import { saveTasks, getTasks } from '../storage/taskStorage';
+import { calculateStreakBonus, calculateTaskXP, updateSkillsXP } from '../services/xpService';
+import { getTodayDate, isYesterday } from '../services/dateService';
+import { skills as initialSkills } from '../models/skills';
+import { toggleTask } from '../services/taskService';
+import { updateStreak } from '../services/streakService';
+import { SkillsRadar } from '../components/SkillsRadar';
 
 export default function HomeScreen() {
     const [tasks, setTasks] = useState(initialTasks);
+    const [xp, setXP] = useState(0);
+    const [streak, setStreak] = useState(0);
+    const [lastCompletedDate, setLastCompletedDate] = useState(null);
+    const [skills, setSkills] = useState(initialSkills)
 
     const completedTasksNumber = tasks.filter((tasks) => {
         return tasks.completed;
@@ -14,18 +24,38 @@ export default function HomeScreen() {
     const completedTasksPorcentage = (tasks.length > 0 ? Number((completedTasksNumber * 100 / tasks.length).toFixed(0)) : 0);
 
     const handleToggleTask = (taskId) => {
-        const updatedTasks = tasks.map((task) => {
-            if (task.id === taskId) {
-                return {
-                    ...task,
-                    completed: !task.completed
-                };
-            };
-
-            return task;
+        const {
+            updatedTasks,
+            earnedXP,
+            selectedTask,
+        } = toggleTask({
+            tasks,
+            taskId,
+            streak
         });
 
         setTasks(updatedTasks);
+        setXP((currentXP) => currentXP + earnedXP)
+        setSkills((currentSkills) =>
+            updateSkillsXP(
+                currentSkills,
+                selectedTask,
+                earnedXP,
+            )
+        );
+
+        if (earnedXP > 0) {
+            const {
+                newStreak,
+                newLastCompletedDate
+            } = updateStreak({
+                streak,
+                lastCompletedDate
+            });
+
+            setStreak(newStreak);
+            setLastCompletedDate(newLastCompletedDate);
+        }
     };
 
     useEffect(() => {
@@ -46,22 +76,25 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.container}>
-            {tasks.map((task) => (
-                <TaskCard
-                key={task.id}
-                title={task.title}
-                skill={task.skill}
-                completed={task.completed}
-                onToggle={() => handleToggleTask(task.id)}
-                >
-                </TaskCard>
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+                {tasks.map((task) => (
+                    <TaskCard
+                        key={task.id}
+                        title={task.title}
+                        skill={task.skill}
+                        completed={task.completed}
+                        onToggle={() => handleToggleTask(task.id)}
+                    />
+                ))}
 
-            ))}
+                <SkillsRadar skills={skills} />
+            </ScrollView>
+
             <Footer
                 concludedTasks={completedTasksNumber}
                 numberTasks={3}
                 concludedTasksPorcentage={completedTasksPorcentage}
-            ></Footer>
+            />
         </View>
     );
 };
@@ -69,8 +102,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
+    },
+    content: {
         alignItems: 'center',
+        paddingBottom: 140,
+        paddingTop: 20,
     },
     title: {
         fontSize: 24,

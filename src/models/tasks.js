@@ -24,5 +24,6 @@ export const skills = [
         skill: 'Extroversão',
         completed: false,
         completedAt: null,
+        alreadyEarnedXP: false,
     },
 ];
