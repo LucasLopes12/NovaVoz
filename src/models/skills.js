@@ -44,6 +44,6 @@ export const skills = [
         name: 'Empatia',
         xp: 0,
         level: 1,
-        progress: 50
+        progress: 90
     },
 ];

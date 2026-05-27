@@ -5,10 +5,12 @@ import Svg, {
     Text as SvgText
 } from 'react-native-svg';
 import React from 'react';
+import { useThemePalette } from '../theme/themeContext';
 
 export function SkillsRadar({
     skills
 }) {
+    const { palette } = useThemePalette();
     const size = 300;
     const center = size / 2;
     const maxRadius = 100;
@@ -34,19 +36,18 @@ export function SkillsRadar({
 
             return `${x},${y}`;
         });
-    console.log(points)
     return (
         <Svg
             width={size}
             height={size}
             style={{
-                backgroundColor: 'red',
+                backgroundColor: 'transparent',
             }}
         >
             <Polygon
                 points={points.join(' ')}
-                fill='rgba(0, 200, 255, 0.4)'
-                stroke='cyan'
+                fill={palette.accentSoft}
+                stroke={palette.accent}
                 strokeWidth='3'
             />
         </Svg>
