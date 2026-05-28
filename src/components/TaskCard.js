@@ -40,7 +40,7 @@ export default function TaskCard({ title, skill, difficulty, completed, onPress,
             <Text style={styles.title}> {title} </Text>
 
             <Text style={[styles.skill, { color: 'white' }]}> Habilidade: {skill} </Text>
-            <Text style={styles.difficulty}> Dificuldade: {difficulty ?? '—'} </Text>
+            <Text style={styles.difficulty}> Dificuldade: {difficulty ? `${difficulty}/5` : '—'} </Text>
 
             <AnimatedPressable
                 style={[
