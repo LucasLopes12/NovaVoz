@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SkillsRadar } from '../components/SkillsRadar';
-import { getSkillColor, getSkillColorWithAlpha } from '../theme/palette';
+import { getSkillColor } from '../theme/palette';
 import { useThemePalette } from '../theme/themeContext';
 
 export default function SkillsViewerScreen({ skills }) {
@@ -30,13 +30,13 @@ export default function SkillsViewerScreen({ skills }) {
                                 style={[
                                     styles.skillRow,
                                     {
-                                        backgroundColor: getSkillColorWithAlpha(skill.name, 0.18),
+                                        backgroundColor: skillColor,
                                         borderColor: skillColor,
                                     },
                                 ]}
                             >
-                                <Text style={[styles.skillName, { color: skillColor }]}>{skill.name}</Text>
-                                <Text style={[styles.skillProgress, { color: skillColor }]}>{skill.progress || 0}%</Text>
+                                <Text style={styles.skillName}>{skill.name}</Text>
+                                <Text style={styles.skillProgress}>{skill.progress || 0}%</Text>
                             </View>
                         );
                     })}
@@ -73,9 +73,14 @@ const createStyles = (palette) => StyleSheet.create({
         marginBottom: 16,
     },
     radarCard: {
+        width: '98%',
+        height: '48%',
+        alignItems: 'center',
         backgroundColor: palette.surface,
         borderRadius: 24,
-        padding: 20,
+        paddingTop: 18,
+        paddingBottom: 18,
+        paddingHorizontal: 12,
         marginBottom: 20,
         borderWidth: 1,
         borderColor: palette.border,
@@ -96,8 +101,10 @@ const createStyles = (palette) => StyleSheet.create({
     skillName: {
         fontSize: 15,
         fontWeight: '600',
+        color: '#fff8f5',
     },
     skillProgress: {
         fontWeight: 'bold',
+        color: '#fff8f5',
     },
 });

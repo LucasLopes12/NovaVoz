@@ -20,8 +20,7 @@ export const darkPalette = {
         Extroversão: '#f59e0b',
         Oratória: '#fb7185',
         Coragem: '#8b5cf6',
-        Empatia: '#14b8a6',
-        Comunicação: '#6366f1',
+        Empatia: '#f97316',
     },
 };
 
@@ -44,8 +43,7 @@ export const lightPalette = {
         Extroversão: '#f59e0b',
         Oratória: '#fb7185',
         Coragem: '#8b5cf6',
-        Empatia: '#14b8a6',
-        Comunicação: '#6366f1',
+        Empatia: '#f97316',
     },
 };
 
