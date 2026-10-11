@@ -7,7 +7,7 @@ export function calculateLevelXP(xp) {
 }
 
 export function calculateTaskXP(task) {
-    return task.difficulty * 10;
+    return Math.max(1, Number(task?.difficulty) || 1) * 10;
 };
 
 export function calculateStreakBonus(streak) {
@@ -29,13 +29,14 @@ export function updateSkillsXP(
 ) {
     return skills.map((skill) => {
         if (skill.name === task.skill) {
-            const newXP = skill.xp + earnedXP;
+            const currentXP = skill.xp || skill.progress || 0;
+            const newXP = currentXP + earnedXP;
             const progress = calculateSkillProgress(newXP);
 
             return {
                 ...skill,
                 xp: newXP,
-                level:calculateLevelXP(newXP),
+                level: calculateLevelXP(newXP),
                 progress: progress
             };
         };

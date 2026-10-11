@@ -1,34 +1,63 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const TASKS_KEY = '@tasks';
+const APP_STATE_KEY = '@novavoz/app-state/v3';
+const PENDING_SYNC_KEY = '@novavoz/pending-sync/v1';
+const LEGACY_TASKS_KEY = '@tasks';
 
-export async function saveTasks(tasks) {
+const getOwnerKey = (ownerId = 'guest') => `${APP_STATE_KEY}/${ownerId}`;
+const getPendingKey = (ownerId) => `${PENDING_SYNC_KEY}/${ownerId}`;
+
+export async function saveAppState(appState, ownerId = 'guest') {
     try {
-        const tasksJSON = JSON.stringify(tasks);
-
-        await AsyncStorage.setItem(
-            TASKS_KEY,
-            tasksJSON
-        );
+        await AsyncStorage.setItem(getOwnerKey(ownerId), JSON.stringify(appState));
     } catch (error) {
-        console.log(error);
-    };
-};
+        console.warn('Não foi possível salvar o progresso do NovaVoz.', error);
+    }
+}
 
-export async function getTasks() {
+export async function getAppState(ownerId = 'guest') {
     try {
-        const tasksJSON = await AsyncStorage.getItem(
-            TASKS_KEY
-        );
+        const savedState = await AsyncStorage.getItem(getOwnerKey(ownerId));
+        if (savedState) return JSON.parse(savedState);
 
-        if (tasksJSON) {
-            return JSON.parse(tasksJSON);
-        }
+        const previousState = await AsyncStorage.getItem('@novavoz/app-state/v2');
+        if (previousState && ownerId === 'demo') return JSON.parse(previousState);
 
+        const legacyTasks = await AsyncStorage.getItem(LEGACY_TASKS_KEY);
+        return legacyTasks ? { tasks: JSON.parse(legacyTasks) } : null;
+    } catch (error) {
+        console.warn('Não foi possível carregar o progresso do NovaVoz.', error);
+        return null;
+    }
+}
+
+export async function enqueuePendingTaskMutation(ownerId, mutation) {
+    try {
+        const key = getPendingKey(ownerId);
+        const current = JSON.parse(await AsyncStorage.getItem(key) || '[]');
+        const withoutOlderIntent = current.filter((item) => String(item.taskId) !== String(mutation.taskId));
+        await AsyncStorage.setItem(key, JSON.stringify([...withoutOlderIntent, mutation]));
+    } catch (error) {
+        console.warn('Não foi possível guardar a alteração para sincronizar depois.', error);
+    }
+}
+
+export async function getPendingTaskMutations(ownerId) {
+    try {
+        return JSON.parse(await AsyncStorage.getItem(getPendingKey(ownerId)) || '[]');
+    } catch (error) {
+        console.warn('Não foi possível ler a fila de sincronização.', error);
         return [];
+    }
+}
+
+export async function clearPendingTaskMutation(ownerId, taskId) {
+    try {
+        const key = getPendingKey(ownerId);
+        const current = JSON.parse(await AsyncStorage.getItem(key) || '[]');
+        const remaining = current.filter((item) => String(item.taskId) !== String(taskId));
+        await AsyncStorage.setItem(key, JSON.stringify(remaining));
     } catch (error) {
-        console.log(error);
-    };
-    
-    return [];
-};
+        console.warn('Não foi possível atualizar a fila de sincronização.', error);
+    }
+}

@@ -1,285 +1,101 @@
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getSkillColor, getSkillColorWithAlpha } from '../theme/palette';
 import { useThemePalette } from '../theme/themeContext';
 
-const defaultComments = [
-    {
-        author: 'Nina',
-        role: 'Mentora',
-        comment: 'Essa missão ajuda muito a quebrar o gelo em situações novas.',
-    },
-    {
-        author: 'Bruno',
-        role: 'Colega',
-        comment: 'Fiquei mais confiante depois de completar essa tarefa.',
-    },
-    {
-        author: 'Paula',
-        role: 'Usuária ativa',
-        comment: 'Ela deixa o dia mais leve e produtivo.',
-    },
-];
-
-export default function TaskDetailScreen({ task, onToggleTask, onBack }) {
+export default function TaskDetailScreen({ task, onToggleTask }) {
     const { palette } = useThemePalette();
     const styles = createStyles(palette);
 
-    if (!task) {
-        return (
-            <View style={styles.emptyState}>
-                <Text style={styles.emptyText}>Selecione uma tarefa para ver os detalhes.</Text>
-            </View>
-        );
-    }
+    if (!task) return <View style={styles.empty}><Text style={styles.emptyText}>Missão não encontrada.</Text></View>;
 
-    const skillColor = getSkillColor(task.skill);
-    const completionLabel = task.completed ? 'Concluída' : 'Pendente';
-    const completionTone = task.completed ? '#22c55e' : '#facc15';
-    const userCount = task.usersCompleted ?? 181;
-    const rating = task.rating ?? 4.9;
-    const completionRate = task.completionRate ?? 76;
+    const color = getSkillColor(task.skill);
+    const xp = (task.difficulty || 1) * 10;
+    const steps = [
+        'Escolha um momento em que você se sinta confortável.',
+        `Faça a missão: “${task.title}”.`,
+        'Respire, observe como se sentiu e marque como concluída.',
+    ];
 
     return (
-        <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-                <View style={[styles.heroCard, { backgroundColor: getSkillColorWithAlpha(task.skill, 0.18), borderColor: skillColor }]}>
-                    <Text style={styles.heroLabel}>Missão em destaque</Text>
-                    <Text style={styles.heroTitle}>{task.title}</Text>
-                    <Text style={[styles.heroSkill, { color: skillColor }]}>Habilidade: {task.skill}</Text>
-
-                    <View style={styles.heroMetaRow}>
-                        <Text style={styles.heroMetaPill}>Dificuldade {task.difficulty || 2}/5</Text>
-                        <Text style={[styles.heroStatus, { color: completionTone }]}>{completionLabel}</Text>
-                    </View>
+        <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+            <View style={[styles.hero, { backgroundColor: getSkillColorWithAlpha(task.skill, 0.18), borderColor: color }]}>
+                <View style={[styles.heroIcon, { backgroundColor: color }]}><Text style={styles.heroIconText}>💬</Text></View>
+                <Text style={[styles.eyebrow, { color }]}>MISSÃO DE {task.skill.toUpperCase()}</Text>
+                <Text style={styles.title}>{task.title}</Text>
+                <View style={styles.rewardsRow}>
+                    <View style={styles.rewardPill}><Text style={styles.rewardText}>⚡ {xp} XP</Text></View>
+                    <View style={styles.rewardPill}><Text style={styles.rewardText}>⏱ 5–10 min</Text></View>
+                    <View style={styles.rewardPill}><Text style={styles.rewardText}>● {task.difficulty}/5</Text></View>
                 </View>
+            </View>
 
-                <View style={styles.statsGrid}>
-                    <View style={styles.statCard}>
-                        <Text style={styles.statValue}>{userCount}</Text>
-                        <Text style={styles.statLabel}>usuários já completaram</Text>
+            <View style={styles.sectionCard}>
+                <Text style={styles.sectionTitle}>Como completar</Text>
+                {steps.map((step, index) => (
+                    <View key={step} style={styles.stepRow}>
+                        <View style={[styles.stepNumber, { backgroundColor: color }]}><Text style={styles.stepNumberText}>{index + 1}</Text></View>
+                        <Text style={styles.stepText}>{step}</Text>
                     </View>
+                ))}
+            </View>
 
-                    <View style={styles.statCard}>
-                        <Text style={styles.statValue}>{rating.toFixed(1)}★</Text>
-                        <Text style={styles.statLabel}>nota média</Text>
-                    </View>
-
-                    <View style={styles.statCard}>
-                        <Text style={styles.statValue}>{completionRate}%</Text>
-                        <Text style={styles.statLabel}>taxa de conclusão</Text>
-                    </View>
+            <View style={styles.tipCard}>
+                <Text style={styles.tipIcon}>💡</Text>
+                <View style={styles.tipCopy}>
+                    <Text style={styles.tipTitle}>Dica da Nova</Text>
+                    <Text style={styles.tipText}>Não busque perfeição. A meta é praticar um pouco, celebrar a tentativa e repetir amanhã.</Text>
                 </View>
+            </View>
 
-                <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Descrição da missão</Text>
-                    <Text style={styles.sectionText}>
-                        Esta tarefa foi pensada para estimular a prática da habilidade <Text style={{ color: skillColor, fontWeight: '700' }}>{task.skill}</Text> em situações reais. Ela combina foco, repetição e feedback social para acelerar o crescimento.
-                    </Text>
-                </View>
+            <View style={styles.communityRow}>
+                <View><Text style={styles.communityValue}>{task.usersCompleted ?? 181}</Text><Text style={styles.communityLabel}>pessoas fizeram</Text></View>
+                <View style={styles.divider} />
+                <View><Text style={styles.communityValue}>{Number(task.rating ?? 4.9).toFixed(1)} ★</Text><Text style={styles.communityLabel}>avaliação</Text></View>
+                <View style={styles.divider} />
+                <View><Text style={styles.communityValue}>{task.completionRate ?? 76}%</Text><Text style={styles.communityLabel}>concluíram</Text></View>
+            </View>
 
-                <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>O que acontece aqui</Text>
-                    <View style={styles.featureList}>
-                        <View style={styles.featureRow}>
-                            <Text style={styles.featureBullet}>•</Text>
-                            <Text style={styles.featureText}>Tempo estimado: 10 a 15 minutos</Text>
-                        </View>
-                        <View style={styles.featureRow}>
-                            <Text style={styles.featureBullet}>•</Text>
-                            <Text style={styles.featureText}>Recompensa mental: foco, confiança e prática contínua</Text>
-                        </View>
-                        <View style={styles.featureRow}>
-                            <Text style={styles.featureBullet}>•</Text>
-                            <Text style={styles.featureText}>Impacto social: pessoas próximas e comunidade ativa</Text>
-                        </View>
-                    </View>
-                </View>
-
-                <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Comentários da comunidade</Text>
-                    {defaultComments.map((item, index) => (
-                        <View key={`${item.author}-${index}`} style={styles.commentCard}>
-                            <View style={styles.commentHeaderRow}>
-                                <Text style={styles.commentAuthor}>{item.author}</Text>
-                                <Text style={styles.commentRole}>{item.role}</Text>
-                            </View>
-                            <Text style={styles.commentText}>{item.comment}</Text>
-                        </View>
-                    ))}
-                </View>
-
-                <Pressable
-                    style={[styles.actionButton, { backgroundColor: task.completed ? palette.surface : skillColor }]}
-                    onPress={() => onToggleTask(task.id)}
-                >
-                    <Text style={styles.actionButtonText}>
-                        {task.completed ? 'Marcar como pendente' : 'Marcar como concluída'}
-                    </Text>
-                </Pressable>
-            </ScrollView>
-        </View>
+            <Pressable accessibilityRole="button" onPress={() => onToggleTask(task.id)}
+                style={[styles.actionButton, { backgroundColor: task.completed ? palette.surfaceSoft : color,
+                    borderBottomColor: task.completed ? palette.shadow : palette.accentStrong }]}>
+                <Text style={[styles.actionText, task.completed && { color: palette.textSecondary }]}>
+                    {task.completed ? 'MARCAR COMO PENDENTE' : 'CONCLUIR MISSÃO'}
+                </Text>
+            </Pressable>
+        </ScrollView>
     );
-};
+}
 
 const createStyles = (palette) => StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: palette.background,
-    },
-    content: {
-        padding: 16,
-        paddingBottom: 32,
-    },
-    emptyState: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: palette.background,
-    },
-    emptyText: {
-        color: palette.textSecondary,
-        fontSize: 16,
-    },
-    heroCard: {
-        borderRadius: 24,
-        padding: 20,
-        borderWidth: 1,
-        marginBottom: 16,
-    },
-    heroLabel: {
-        color: palette.textSecondary,
-        fontSize: 12,
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-        marginBottom: 6,
-    },
-    heroTitle: {
-        color: palette.textPrimary,
-        fontSize: 26,
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    heroSkill: {
-        fontSize: 16,
-        fontWeight: '700',
-        marginBottom: 10,
-    },
-    heroMetaRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: 10,
-    },
-    heroMetaPill: {
-        color: palette.textPrimary,
-        backgroundColor: palette.surface,
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 999,
-        fontSize: 12,
-        fontWeight: '700',
-    },
-    heroStatus: {
-        fontSize: 12,
-        fontWeight: '800',
-        textTransform: 'uppercase',
-        letterSpacing: 0.8,
-    },
-    statsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 10,
-        marginBottom: 16,
-    },
-    statCard: {
-        flex: 1,
-        minWidth: '30%',
-        backgroundColor: palette.surface,
-        borderRadius: 18,
-        padding: 14,
-        borderWidth: 1,
-        borderColor: palette.border,
-    },
-    statValue: {
-        color: palette.textPrimary,
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
-    statLabel: {
-        color: palette.textSecondary,
-        fontSize: 11,
-    },
-    sectionCard: {
-        backgroundColor: palette.surface,
-        borderRadius: 20,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: palette.border,
-        marginBottom: 16,
-    },
-    sectionTitle: {
-        color: palette.textPrimary,
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    sectionText: {
-        color: palette.textSecondary,
-        lineHeight: 20,
-    },
-    featureList: {
-        gap: 8,
-    },
-    featureRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-    },
-    featureBullet: {
-        color: palette.accent,
-        marginRight: 8,
-        fontSize: 16,
-        lineHeight: 18,
-    },
-    featureText: {
-        color: palette.textSecondary,
-        flex: 1,
-        lineHeight: 20,
-    },
-    commentCard: {
-        backgroundColor: palette.surfaceSoft,
-        borderRadius: 16,
-        padding: 12,
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: palette.border,
-    },
-    commentHeaderRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 6,
-    },
-    commentAuthor: {
-        color: palette.textPrimary,
-        fontWeight: '700',
-    },
-    commentRole: {
-        color: palette.textSecondary,
-        fontSize: 11,
-    },
-    commentText: {
-        color: palette.textSecondary,
-        lineHeight: 18,
-    },
-    actionButton: {
-        borderRadius: 999,
-        paddingVertical: 14,
-        alignItems: 'center',
-        marginTop: 4,
-    },
-    actionButtonText: {
-        color: palette.background,
-        fontWeight: 'bold',
-        fontSize: 15,
-    },
+    container: { flex: 1, backgroundColor: palette.background },
+    content: { width: '100%', maxWidth: 720, alignSelf: 'center', padding: 18, paddingBottom: 36 },
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: palette.background },
+    emptyText: { color: palette.textSecondary },
+    hero: { alignItems: 'center', borderRadius: 22, borderWidth: 2, borderBottomWidth: 6, padding: 20, marginBottom: 16 },
+    heroIcon: { width: 66, height: 66, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginBottom: 13 },
+    heroIconText: { fontSize: 32 },
+    eyebrow: { fontSize: 10, fontWeight: '900', letterSpacing: 1.1, marginBottom: 7 },
+    title: { color: palette.textPrimary, fontSize: 25, lineHeight: 31, fontWeight: '900', textAlign: 'center' },
+    rewardsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 7, marginTop: 16 },
+    rewardPill: { backgroundColor: palette.surface, borderRadius: 9, paddingHorizontal: 9, paddingVertical: 6 },
+    rewardText: { color: palette.textSecondary, fontSize: 11, fontWeight: '800' },
+    sectionCard: { backgroundColor: palette.surface, borderRadius: 18, borderWidth: 2, borderColor: palette.border,
+        borderBottomWidth: 5, borderBottomColor: palette.shadow, padding: 16, marginBottom: 14 },
+    sectionTitle: { color: palette.textPrimary, fontSize: 18, fontWeight: '900', marginBottom: 14 },
+    stepRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+    stepNumber: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 11 },
+    stepNumberText: { color: '#FFFFFF', fontWeight: '900' },
+    stepText: { flex: 1, color: palette.textSecondary, fontSize: 14, lineHeight: 20, fontWeight: '600' },
+    tipCard: { flexDirection: 'row', backgroundColor: '#FFF5CC', borderRadius: 18, padding: 15,
+        borderWidth: 2, borderColor: '#FFE066', marginBottom: 14 },
+    tipIcon: { fontSize: 27, marginRight: 11 }, tipCopy: { flex: 1 },
+    tipTitle: { color: '#765B00', fontWeight: '900', fontSize: 14, marginBottom: 4 },
+    tipText: { color: '#765B00', fontSize: 13, lineHeight: 19, fontWeight: '600' },
+    communityRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', backgroundColor: palette.surface,
+        borderRadius: 16, paddingVertical: 14, borderWidth: 2, borderColor: palette.border, marginBottom: 16 },
+    communityValue: { color: palette.textPrimary, textAlign: 'center', fontWeight: '900', fontSize: 16 },
+    communityLabel: { color: palette.textSecondary, textAlign: 'center', fontSize: 9, marginTop: 3 },
+    divider: { width: 1, height: 28, backgroundColor: palette.border },
+    actionButton: { borderRadius: 14, alignItems: 'center', paddingVertical: 15, borderBottomWidth: 5 },
+    actionText: { color: '#FFFFFF', fontWeight: '900', fontSize: 13, letterSpacing: 0.5 },
 });

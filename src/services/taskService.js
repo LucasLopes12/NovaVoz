@@ -6,11 +6,12 @@ export function toggleTask({
     streak,
 }) {
     let earnedXP = 0;
-    const selectedTask = tasks.find((task) => task.id === taskId)
+    const selectedTask = tasks.find((task) => task.id === taskId);
 
     const updatedTasks = tasks.map((task) => {
         if (task.id === taskId) {
-            const shouldEarnXP = !task.alreadyEarnedXP;
+            const shouldComplete = !task.completed;
+            const shouldEarnXP = shouldComplete && !task.alreadyEarnedXP;
 
             if (shouldEarnXP) {
                 const streakBonus = calculateStreakBonus(streak);
@@ -18,9 +19,9 @@ export function toggleTask({
                 earnedXP = calculateTaskXP(task) * streakBonus;
             }
             return {
-                ...task, 
-                completed: !task.completed,
-                alreadyEarnedXP: true
+                ...task,
+                completed: shouldComplete,
+                alreadyEarnedXP: task.alreadyEarnedXP || shouldEarnXP,
             };
         };
 

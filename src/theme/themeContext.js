@@ -2,8 +2,8 @@ import { createContext, useContext } from 'react';
 import { getPalette } from './palette';
 
 export const ThemeContext = createContext({
-    themeName: 'dark',
-    palette: getPalette('dark'),
+    themeName: 'light',
+    palette: getPalette('light'),
     toggleTheme: () => { },
 });
 

@@ -1,115 +1,52 @@
-import Svg, {
-    Polygon,
-    Line,
-    Circle,
-    Text as SvgText,
-    Image as SvgImage,
-} from 'react-native-svg';
 import React from 'react';
+import Svg, { Circle, Image as SvgImage, Line, Polygon, Text as SvgText } from 'react-native-svg';
 import { useThemePalette } from '../theme/themeContext';
 
 const skillImageMap = {
-    'Confiança': require('../../assets/ESMERALDPIXELART.png'),
-    'Verbalização': require('../../assets/DIAMONDPIXELART.png'),
-    'Extroversão': require('../../assets/GOLDPIXELART.png'),
-    'Oratória': require('../../assets/ROSERUBIPIXELART.png'),
-    'Coragem': require('../../assets/PURPLERUBIAPIXELART.png'),
-    'Empatia': require('../../assets/ORANGEPIXELART.png'),
+    Confiança: require('../../assets/ESMERALDPIXELART.png'),
+    Verbalização: require('../../assets/DIAMONDPIXELART.png'),
+    Extroversão: require('../../assets/GOLDPIXELART.png'),
+    Oratória: require('../../assets/ROSERUBIPIXELART.png'),
+    Coragem: require('../../assets/PURPLERUBIAPIXELART.png'),
+    Empatia: require('../../assets/ORANGEPIXELART.png'),
 };
 
-export function SkillsRadar({
-    skills
-}) {
+export function SkillsRadar({ skills }) {
     const { palette } = useThemePalette();
-    const size = 360;
+    const size = 320;
     const center = size / 2;
-    const maxRadius = 100;
-    const labelRadius = maxRadius + 32;
-
-    const skillPoints = skills.map((skill, index) => {
-        const angle =
-            (Math.PI * 2 * index)
-            / skills.length
-            - Math.PI / 2;
-        const radius =
-            ((skill.progress || 0) / 100)
-            * maxRadius;
-
-        const x = center + radius * Math.cos(angle);
-        const y = center + radius * Math.sin(angle);
-
-        const labelX = center + labelRadius * Math.cos(angle);
-        const labelY = center + labelRadius * Math.sin(angle);
-
-        return {
-            x,
-            y,
-            labelX,
-            labelY,
-            angle,
-            name: skill.name || `Skill ${index + 1}`,
-        };
-    });
-
-    const polygonPoints = skillPoints.map((point) => `${point.x},${point.y}`).join(' ');
+    const maxRadius = 94;
+    const labelRadius = 124;
+    const getPoint = (radius, index) => {
+        const angle = (Math.PI * 2 * index) / skills.length - Math.PI / 2;
+        return { x: center + radius * Math.cos(angle), y: center + radius * Math.sin(angle), angle };
+    };
+    const points = skills.map((skill, index) => ({
+        ...getPoint((Math.min(100, Math.max(0, skill.progress || 0)) / 100) * maxRadius, index),
+        label: getPoint(labelRadius, index),
+        axis: getPoint(maxRadius, index),
+        name: skill.name,
+    }));
 
     return (
-        <Svg
-            width={size}
-            height={size}
-            style={{
-                backgroundColor: 'transparent',
-            }}
-        >
-            {skillPoints.map((point, index) => (
-                <Line
-                    key={`axis-${index}`}
-                    x1={center}
-                    y1={center}
-                    x2={point.x}
-                    y2={point.y}
-                    stroke={palette.border}
-                    strokeWidth="1"
-                    opacity="0.5"
-                />
+        <Svg width="100%" height={320} viewBox={`0 0 ${size} ${size}`}>
+            {[0.25, 0.5, 0.75, 1].map((scale) => (
+                <Circle key={scale} cx={center} cy={center} r={maxRadius * scale}
+                    fill="none" stroke={palette.border} strokeWidth="1.5" />
             ))}
-
-            <Polygon
-                points={polygonPoints}
-                fill={palette.accentSoft}
-                stroke={palette.accent}
-                strokeWidth="3"
-            />
-
-            {skillPoints.map((point, index) => {
-                const skillImage = skillImageMap[point.name];
-                const textColor = palette.skillColors[point.name] || palette.textPrimary;
-
-                return (
-                    <React.Fragment key={`skill-node-${index}`}>
-                        {skillImage ? (
-                            <SvgImage
-                                href={skillImage}
-                                x={point.labelX - 16}
-                                y={point.labelY - 38}
-                                width="32"
-                                height="32"
-                            />
-                        ) : null}
-                        <SvgText
-                            x={point.labelX}
-                            y={point.labelY + 18}
-                            fill={textColor}
-                            fontSize="10"
-                            fontWeight="700"
-                            textAnchor="middle"
-                            alignmentBaseline="middle"
-                        >
-                            {point.name}
-                        </SvgText>
-                    </React.Fragment>
-                )
-            })}
+            {points.map((point, index) => (
+                <Line key={`axis-${index}`} x1={center} y1={center} x2={point.axis.x} y2={point.axis.y}
+                    stroke={palette.border} strokeWidth="1.5" />
+            ))}
+            <Polygon points={points.map((point) => `${point.x},${point.y}`).join(' ')}
+                fill={palette.accentSoft} stroke={palette.accent} strokeWidth="3" />
+            {points.map((point, index) => (
+                <React.Fragment key={point.name}>
+                    <SvgImage href={skillImageMap[point.name]} x={point.label.x - 15} y={point.label.y - 25} width="30" height="30" />
+                    <SvgText x={point.label.x} y={point.label.y + 16} fill={palette.skillColors[point.name] || palette.textPrimary}
+                        fontSize="9" fontWeight="800" textAnchor="middle">{point.name}</SvgText>
+                </React.Fragment>
+            ))}
         </Svg>
-    )
-};
+    );
+}
