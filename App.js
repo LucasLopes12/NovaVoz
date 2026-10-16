@@ -15,6 +15,7 @@ import { updateStreak } from './src/services/streakService';
 import { getTodayDate, isYesterday } from './src/services/dateService';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import AuthScreen from './src/screens/AuthScreen';
+import WelcomeScreen from './src/screens/WelcomeScreen';
 import { getCloudProgress, mergeCloudProgress, setCloudTaskCompletion } from './src/services/progressRepository';
 
 const mergeById = (defaults, saved = []) => defaults.map((item) => ({
@@ -24,6 +25,7 @@ const mergeById = (defaults, saved = []) => defaults.map((item) => ({
 
 function NovaVozApp() {
     const { user, loading: authLoading, isDemo } = useAuth();
+    const [entryScreen, setEntryScreen] = useState('welcome');
     const [themeName, setThemeName] = useState('light');
     const [currentView, setCurrentView] = useState('home');
     const [selectedTask, setSelectedTask] = useState(null);
@@ -179,6 +181,10 @@ function NovaVozApp() {
 
     if (authLoading) {
         return <View style={styles.loading}><ActivityIndicator size="large" color={palette.accent} /><Text style={styles.loadingText}>Preparando sua jornada…</Text></View>;
+    }
+
+    if (!user && entryScreen === 'welcome') {
+        return <WelcomeScreen palette={palette} onContinue={() => setEntryScreen('auth')} />;
     }
 
     if (!user) return <AuthScreen palette={palette} />;

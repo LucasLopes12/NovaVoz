@@ -4,7 +4,7 @@ export const skills = [
         name: 'Confiança',
         xp: 0,
         level: 1,
-        progress: 70
+        progress: 0
     },
 
     {
@@ -12,7 +12,7 @@ export const skills = [
         name: 'Verbalização',
         xp: 0,
         level: 1,
-        progress: 80
+        progress: 0
     },
 
     {
@@ -20,7 +20,7 @@ export const skills = [
         name: 'Extroversão',
         xp: 0,
         level: 1,
-        progress: 40
+        progress: 0
     },
 
     {
@@ -28,7 +28,7 @@ export const skills = [
         name: 'Oratória',
         xp: 0,
         level: 1,
-        progress: 70
+        progress: 0
     },
 
     {
@@ -36,7 +36,7 @@ export const skills = [
         name: 'Coragem',
         xp: 0,
         level: 1,
-        progress: 30
+        progress: 0
     },
 
     {
@@ -44,6 +44,6 @@ export const skills = [
         name: 'Empatia',
         xp: 0,
         level: 1,
-        progress: 100
+        progress: 0
     },
 ];
