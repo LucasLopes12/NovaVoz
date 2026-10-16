@@ -15,6 +15,7 @@ import { updateStreak } from './src/services/streakService';
 import { getTodayDate, isYesterday } from './src/services/dateService';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import AuthScreen from './src/screens/AuthScreen';
+import ObjectiveScreen from './src/screens/ObjectiveScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import { getCloudProgress, mergeCloudProgress, setCloudTaskCompletion } from './src/services/progressRepository';
 
@@ -184,7 +185,11 @@ function NovaVozApp() {
     }
 
     if (!user && entryScreen === 'welcome') {
-        return <WelcomeScreen palette={palette} onContinue={() => setEntryScreen('auth')} />;
+        return <WelcomeScreen palette={palette} onContinue={() => setEntryScreen('objective')} />;
+    }
+
+    if (!user && entryScreen === 'objective') {
+        return <ObjectiveScreen palette={palette} onContinue={() => setEntryScreen('auth')} />;
     }
 
     if (!user) return <AuthScreen palette={palette} />;
