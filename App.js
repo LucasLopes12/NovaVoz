@@ -17,6 +17,7 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import AuthScreen from './src/screens/AuthScreen';
 import ObjectiveScreen from './src/screens/ObjectiveScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
+import WhyScreen from './src/screens/WhyScreen';
 import { getCloudProgress, mergeCloudProgress, setCloudTaskCompletion } from './src/services/progressRepository';
 
 const mergeById = (defaults, saved = []) => defaults.map((item) => ({
@@ -189,7 +190,11 @@ function NovaVozApp() {
     }
 
     if (!user && entryScreen === 'objective') {
-        return <ObjectiveScreen palette={palette} onContinue={() => setEntryScreen('auth')} />;
+        return <ObjectiveScreen palette={palette} onContinue={() => setEntryScreen('why')} />;
+    }
+
+    if (!user && entryScreen === 'why') {
+        return <WhyScreen palette={palette} onContinue={() => setEntryScreen('auth')} />;
     }
 
     if (!user) return <AuthScreen palette={palette} />;
