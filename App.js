@@ -8,7 +8,8 @@ import { skills as initialSkills } from './src/models/skills';
 import { tasks as initialTasks } from './src/models/tasks';
 import { getPalette } from './src/theme/palette';
 import { ThemeProvider } from './src/theme/themeContext';
-import { clearPendingTaskMutation, enqueuePendingTaskMutation, getAppState, getPendingTaskMutations, saveAppState } from './src/storage/taskStorage';
+import { clearPendingReflection, clearPendingTaskMutation, enqueuePendingReflection, enqueuePendingTaskMutation,
+    getAppState, getPendingReflections, getPendingTaskMutations, saveAppState } from './src/storage/taskStorage';
 import { toggleTask } from './src/services/taskService';
 import { updateSkillsXP } from './src/services/xpService';
 import { updateStreak } from './src/services/streakService';
@@ -18,7 +19,7 @@ import AuthScreen from './src/screens/AuthScreen';
 import ObjectiveScreen from './src/screens/ObjectiveScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import WhyScreen from './src/screens/WhyScreen';
-import { getCloudProgress, mergeCloudProgress, setCloudTaskCompletion } from './src/services/progressRepository';
+import { getCloudProgress, mergeCloudProgress, setCloudTaskCompletion, setCloudTaskReflection } from './src/services/progressRepository';
 
 const mergeById = (defaults, saved = []) => defaults.map((item) => ({
     ...item,
@@ -72,6 +73,11 @@ function NovaVozApp() {
                         const task = initialTasks.find((item) => String(item.id) === String(mutation.taskId));
                         if (task) await setCloudTaskCompletion(task, mutation.completed);
                         await clearPendingTaskMutation(user.id, mutation.taskId);
+                    }
+                    const pendingReflections = await getPendingReflections(user.id);
+                    for (const reflection of pendingReflections) {
+                        await setCloudTaskReflection(reflection.taskId, reflection.text);
+                        await clearPendingReflection(user.id, reflection.taskId);
                     }
                     const cloud = mergeCloudProgress(initialTasks, initialSkills, await getCloudProgress());
                     if (cloud && active) {
@@ -178,6 +184,31 @@ function NovaVozApp() {
         }
     };
 
+    const handleSaveReflection = async (taskId, reflection) => {
+        const text = reflection.trim();
+        setTasks((currentTasks) => currentTasks.map((task) => task.id === taskId ? { ...task, reflection: text } : task));
+        setSelectedTask((current) => current?.id === taskId ? { ...current, reflection: text } : current);
+
+        if (isDemo) return { savedLocally: true };
+
+        try {
+            setSyncStatus('syncing');
+            await setCloudTaskReflection(taskId, text);
+            await clearPendingReflection(user.id, taskId);
+            setSyncStatus('synced');
+            return { savedLocally: false };
+        } catch (error) {
+            console.warn('A reflexão ficou salva localmente e será sincronizada depois.', error);
+            await enqueuePendingReflection(user.id, {
+                taskId,
+                text,
+                createdAt: new Date().toISOString(),
+            });
+            setSyncStatus('offline');
+            return { savedLocally: true };
+        }
+    };
+
     const isDetail = currentView === 'task-detail';
     const activeTitle = isDetail ? 'Missão' : currentView === 'viewer' ? 'Sua evolução' : currentView === 'profile' ? 'Seu perfil' : 'NovaVoz';
 
@@ -211,7 +242,8 @@ function NovaVozApp() {
                 <View style={styles.screenContainer}>
                     <AppMainContent currentView={currentView} skills={skills} tasks={tasks} selectedTask={selectedTask}
                         detailSlideOffset={detailSlideOffset} onTaskPress={handleOpenTaskDetail}
-                        onToggleTask={handleToggleTask} screenContainerStyle={styles.screenContainer} xp={xp} streak={streak}
+                        onToggleTask={handleToggleTask} onSaveReflection={handleSaveReflection}
+                        screenContainerStyle={styles.screenContainer} xp={xp} streak={streak}
                         themeName={themeName} syncStatus={syncStatus}
                         onToggleTheme={() => setThemeName((value) => value === 'dark' ? 'light' : 'dark')} />
                 </View>

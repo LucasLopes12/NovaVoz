@@ -12,6 +12,7 @@ export default function AppMainContent({
     detailSlideOffset,
     onTaskPress,
     onToggleTask,
+    onSaveReflection,
     onBack,
     screenContainerStyle,
     xp,
@@ -42,6 +43,7 @@ export default function AppMainContent({
                 <TaskDetailScreen
                     task={selectedTask}
                     onToggleTask={onToggleTask}
+                    onSaveReflection={onSaveReflection}
                     onBack={onBack}
                 />
             </Animated.View>

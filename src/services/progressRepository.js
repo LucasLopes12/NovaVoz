@@ -5,7 +5,7 @@ export async function getCloudProgress() {
 
     const [profileResult, tasksResult, skillsResult] = await Promise.all([
         supabase.from('profiles').select('xp, streak, last_completed_date').single(),
-        supabase.from('task_progress').select('task_id, completed, xp_awarded'),
+        supabase.from('task_progress').select('*'),
         supabase.from('skill_progress').select('skill_name, xp'),
     ]);
 
@@ -33,6 +33,18 @@ export async function setCloudTaskCompletion(task, completed) {
     return data;
 }
 
+export async function setCloudTaskReflection(taskId, reflection) {
+    if (!supabase) return null;
+
+    const { data, error } = await supabase.rpc('set_task_reflection', {
+        p_task_id: String(taskId),
+        p_reflection: reflection.trim() || null,
+    });
+
+    if (error) throw error;
+    return data;
+}
+
 export function mergeCloudProgress(defaultTasks, defaultSkills, cloud) {
     if (!cloud) return null;
     const taskById = new Map(cloud.tasks.map((item) => [String(item.task_id), item]));
@@ -41,7 +53,12 @@ export function mergeCloudProgress(defaultTasks, defaultSkills, cloud) {
     return {
         tasks: defaultTasks.map((task) => {
             const saved = taskById.get(String(task.id));
-            return saved ? { ...task, completed: saved.completed, alreadyEarnedXP: saved.xp_awarded } : task;
+            return saved ? {
+                ...task,
+                completed: saved.completed,
+                alreadyEarnedXP: saved.xp_awarded,
+                reflection: saved.reflection || '',
+            } : task;
         }),
         skills: defaultSkills.map((skill) => {
             const saved = skillByName.get(skill.name);
