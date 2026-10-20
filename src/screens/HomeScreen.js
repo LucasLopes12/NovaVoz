@@ -1,9 +1,8 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import TaskCard from '../components/TaskCard';
-import { getSkillColor } from '../theme/palette';
+import LearningPath from '../components/LearningPath';
 import { useThemePalette } from '../theme/themeContext';
 
-export default function HomeScreen({ tasks, onTaskPress, onToggleTask, xp, streak }) {
+export default function HomeScreen({ tasks, onTaskPress, xp, streak }) {
     const { palette } = useThemePalette();
     const styles = createStyles(palette);
     const completed = tasks.filter((task) => task.completed).length;
@@ -41,13 +40,7 @@ export default function HomeScreen({ tasks, onTaskPress, onToggleTask, xp, strea
                 <Text style={styles.unitIcon}>💬</Text>
             </View>
 
-            <View style={styles.path}>
-                {tasks.map((task, index) => (
-                    <TaskCard key={task.id} index={index} title={task.title} skill={task.skill}
-                        difficulty={task.difficulty} completed={task.completed} skillColor={getSkillColor(task.skill)}
-                        onPress={() => onTaskPress(task)} onToggleTask={() => onToggleTask(task.id)} />
-                ))}
-            </View>
+            <LearningPath tasks={tasks} onTaskPress={onTaskPress} />
         </ScrollView>
     );
 }
@@ -79,5 +72,4 @@ const createStyles = (palette) => StyleSheet.create({
     unitEyebrow: { color: '#E8FFD9', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
     unitTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', marginTop: 2 },
     unitIcon: { fontSize: 30 },
-    path: { width: '100%' },
 });
