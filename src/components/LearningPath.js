@@ -94,13 +94,13 @@ function JourneyNode({ task, index, position, pathWidth, isCurrent, isLocked, on
     );
 }
 
-export default function LearningPath({ tasks, onTaskPress }) {
+export default function LearningPath({ tasks, currentTaskId, onTaskPress }) {
     const { palette } = useThemePalette();
     const styles = createStyles(palette);
     const [pathWidth, setPathWidth] = useState(340);
-    const currentIndex = tasks.findIndex((task) => !task.completed);
-    const activeIndex = currentIndex === -1 ? tasks.length : currentIndex;
-    const bottomPadding = currentIndex === -1 ? 128 : 68;
+    const levelComplete = tasks.length > 0 && tasks.every((task) => task.completed);
+    const activeIndex = tasks.findIndex((task) => String(task.id) === String(currentTaskId));
+    const bottomPadding = levelComplete ? 128 : 68;
     const height = Math.max(180, TOP_PADDING * 2 + Math.max(0, tasks.length - 1) * ROW_HEIGHT + bottomPadding);
     const positions = tasks.map((_, index) => getPosition(index, pathWidth));
 
@@ -136,12 +136,12 @@ export default function LearningPath({ tasks, onTaskPress }) {
                     position={positions[index]}
                     pathWidth={pathWidth}
                     isCurrent={index === activeIndex}
-                    isLocked={!task.completed && index > activeIndex}
+                    isLocked={!task.completed && index !== activeIndex}
                     onPress={onTaskPress}
                 />
             ))}
 
-            {currentIndex === -1 && tasks.length > 0 && (
+            {levelComplete && (
                 <View style={[styles.finishCard, { top: height - 54 }]}>
                     <Text style={styles.finishText}>Trilha completa! 🎉</Text>
                 </View>
